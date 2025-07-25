@@ -1,10 +1,15 @@
+# tracker.py
 import sqlite3
 from datetime import datetime
 
-DB_PATH = "applications.db"
+DB_PATH = "data/job_applications.sqlite"
 
-def init_db():
+def get_db_connection():
     conn = sqlite3.connect(DB_PATH)
+    return conn
+
+def initialize_db():
+    conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS applications (
@@ -19,20 +24,13 @@ def init_db():
     conn.commit()
     conn.close()
 
-def log_application(company: str, title: str, status: str = "applied", notes: str = ""):
-    conn = sqlite3.connect(DB_PATH)
+def log_application(company: str, title: str, status: str = "Applied", notes: str = ""):
+    initialize_db()
+    conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute('''
+    cursor.execute("""
         INSERT INTO applications (company, title, date_applied, status, notes)
         VALUES (?, ?, ?, ?, ?)
-    ''', (company, title, datetime.utcnow().strftime("%Y-%m-%d"), status, notes))
+    """, (company, title, datetime.now().isoformat(), status, notes))
     conn.commit()
     conn.close()
-
-def get_all_applications():
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM applications")
-    results = cursor.fetchall()
-    conn.close()
-    return results

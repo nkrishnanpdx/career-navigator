@@ -1,18 +1,31 @@
-from agents import Agent, Runner
+# tailor.py
+import json
+from simple_agents import Agent, Runner
 
 INSTRUCTIONS = """
-You are a resume and cover letter writer. Given a user resume summary and a job description,
-generate a tailored resume (as text) and a concise, compelling cover letter (as text).
-Keep formatting markdown-compatible.
+You are an expert career assistant. Given a base resume and a job description, create a tailored resume highlighting relevant skills and experiences, 
+and write a concise cover letter for the job. Output JSON with fields: tailored_resume (string), cover_letter (string).
+Make sure the JSON is valid.
 """
 
 tailor_agent = Agent(
-    name="ApplicationTailor",
+    name="TailorAgent",
     instructions=INSTRUCTIONS,
-    model="gpt-4o-mini"
+    model="gpt-4o-mini",
 )
 
-async def tailor_application(profile: str, job_description: str):
-    input_text = f"Candidate Profile:\n{profile}\n\nJob Description:\n{job_description}"
-    result = await Runner.run(tailor_agent, input_text)
-    return result.final_output
+async def tailor_application(resume_text: str, job_description: str) -> dict:
+    prompt = f\"\"\"Base Resume:
+{resume_text}
+
+Job Description:
+{job_description}
+
+Please generate the tailored documents.\"\"\"
+    response = await Runner.run(tailor_agent, prompt)
+    try:
+        data = json.loads(response)
+        return data
+    except json.JSONDecodeError:
+        print("Failed to parse tailoring JSON")
+        return {}

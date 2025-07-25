@@ -1,28 +1,41 @@
-# email_agent.py
 import os
-from sendgrid import SendGridAPIClient
-from sendgrid.helpers.mail import Mail
+import sendgrid
+from sendgrid.helpers.mail import Mail, Email, To
+import asyncio
+from concurrent.futures import ThreadPoolExecutor
+import certifi
 
-SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY")
-FROM_EMAIL = os.getenv("FROM_EMAIL")
-TO_EMAIL = os.getenv("TO_EMAIL")
+# Ensure proper SSL cert file location (fix SSL verify issues)
+os.environ['SSL_CERT_FILE'] = certifi.where()
 
-async def send_application_email(subject: str, message: str) -> bool:
-    if not SENDGRID_API_KEY or not FROM_EMAIL or not TO_EMAIL:
-        print("SendGrid API key or emails not configured.")
-        return False
+executor = ThreadPoolExecutor()
+
+async def send_application_email(subject: str, html_body: str) -> dict:
+    sg_api_key = os.getenv("SENDGRID_API_KEY")
+    if not sg_api_key:
+        return {"status": "fail", "reason": "SENDGRID_API_KEY not set in environment"}
+
+    from_email = Email("FROM_EMAIL")
+    to_email = To("TO_EMAIL")
+
+    mail = Mail(
+        from_email=from_email,
+        to_emails=to_email,
+        subject=subject,
+        html_content=html_body
+    )
+
+    sg = sendgrid.SendGridAPIClient(api_key=sg_api_key)
+    # Disable SSL verification for debugging 
+    sg.client._session.verify = False
+
+    def send_mail_sync():
+        return sg.client.mail.send.post(request_body=mail.get())
 
     try:
-        sg = SendGridAPIClient(SENDGRID_API_KEY)
-        mail = Mail(
-            from_email=FROM_EMAIL,
-            to_emails=TO_EMAIL,
-            subject=subject,
-            html_content=message,
-        )
-        response = sg.send(mail)
-        print(f"Email sent with status code: {response.status_code}")
-        return response.status_code in (200, 202)
+        response = await asyncio.get_event_loop().run_in_executor(executor, send_mail_sync)
+        print(f"Email sent! Status code: {response.status_code}")
+        return {"status": "success", "code": response.status_code}
     except Exception as e:
         print(f"Error sending email: {e}")
-        return False
+        return {"status": "fail", "reason": str(e)}

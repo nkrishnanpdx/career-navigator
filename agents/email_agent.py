@@ -1,32 +1,28 @@
-from agents import Agent, Runner, function_tool
-from sendgrid import SendGridAPIClient
-from sendgrid.helpers.mail import Mail, Email, To, Content
+# email_agent.py
 import os
-from typing import Dict
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail
 
-@function_tool
-def send_email(subject: str, html_body: str) -> Dict[str, str]:
-    """Send an email with the given subject and HTML body"""
-    sg = SendGridAPIClient(api_key=os.getenv("SENDGRID_API_KEY"))
-    from_email = Email(os.getenv("FROM_EMAIL"))
-    to_email = To(os.getenv("TO_EMAIL"))
-    content = Content("text/html", html_body)
-    mail = Mail(from_email, to_email, subject, content).get()
-    sg.client.mail.send.post(request_body=mail)
-    return {"status": "success"}
+SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY")
+FROM_EMAIL = os.getenv("FROM_EMAIL")
+TO_EMAIL = os.getenv("TO_EMAIL")
 
-INSTRUCTIONS = """
-You are a helpful assistant that formats job application content into a clean HTML email. 
-Take the user's message (e.g., a cover letter or summary) and send it via email using your tool.
-"""
+async def send_application_email(subject: str, message: str) -> bool:
+    if not SENDGRID_API_KEY or not FROM_EMAIL or not TO_EMAIL:
+        print("SendGrid API key or emails not configured.")
+        return False
 
-email_agent = Agent(
-    name="EmailAgent",
-    instructions=INSTRUCTIONS,
-    tools=[send_email],
-    model="gpt-4o-mini"
-)
-
-async def send_application_email(subject: str, message: str):
-    result = await Runner.run(email_agent, message)
-    return result.final_output
+    try:
+        sg = SendGridAPIClient(SENDGRID_API_KEY)
+        mail = Mail(
+            from_email=FROM_EMAIL,
+            to_emails=TO_EMAIL,
+            subject=subject,
+            html_content=message,
+        )
+        response = sg.send(mail)
+        print(f"Email sent with status code: {response.status_code}")
+        return response.status_code in (200, 202)
+    except Exception as e:
+        print(f"Error sending email: {e}")
+        return False

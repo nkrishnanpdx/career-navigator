@@ -1,7 +1,7 @@
-import os
 import json
-from pydantic import BaseModel, Field, ValidationError
-from simple_agents import Agent, Runner  # your minimal classes
+import re
+from simple_agents import Agent, Runner
+from pydantic import BaseModel, Field
 
 class JobSearchItem(BaseModel):
     reason: str = Field(description="Why this job title or search term is useful")
@@ -15,17 +15,16 @@ You are a career coach planning job searches. Given a user profile with preferre
 and industries, generate 3 effective search queries for job boards like LinkedIn or Indeed. 
 Include reasoning for each search term.
 
-Output the results as a JSON array like this:
-
+Return the output as a valid JSON object with this format:
 {
-  \"searches\": [
-    {\"reason\": \"Reason 1\", \"query\": \"job title 1, location\"},
-    {\"reason\": \"Reason 2\", \"query\": \"job title 2, location\"},
-    {\"reason\": \"Reason 3\", \"query\": \"job title 3, location\"}
+  "searches": [
+    {
+      "reason": "...",
+      "query": "..."
+    },
+    ...
   ]
 }
-
-Make sure the output is valid JSON.
 """
 
 planner_agent = Agent(
@@ -34,14 +33,23 @@ planner_agent = Agent(
     model="gpt-4o-mini",
 )
 
-async def plan_jobs(profile_summary: str) -> JobSearchPlan:
-    response = await Runner.run(planner_agent, f"Profile: {profile_summary}")
-    # The response is a string with JSON inside — parse it:
+def clean_json_response(response: str) -> str:
+    # Remove markdown code fences and language tags if present
+    cleaned = re.sub(r"^```(?:json)?\n", "", response)
+    cleaned = re.sub(r"\n```$", "", cleaned)
+    return cleaned.strip()
+
+async def plan_jobs(profile_summary: str):
+    raw_response = await Runner.run(planner_agent, f"Profile: {profile_summary}")
+    print("Raw response from planner_agent:")
+    print(raw_response)
+
+    cleaned_response = clean_json_response(raw_response)
+
     try:
-        data = json.loads(response)
-        plan = JobSearchPlan(**data)
-        return plan
-    except (json.JSONDecodeError, ValidationError) as e:
-        print("Failed to parse job search plan:", e)
-        # Optionally return empty or partial result, or raise
-        return JobSearchPlan(searches=[])
+        data = json.loads(cleaned_response)
+    except json.JSONDecodeError as e:
+        print(f"Failed to parse job search plan: {e}")
+        data = {"searches": []}
+
+    return data

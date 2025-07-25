@@ -1,0 +1,9 @@
+openai
+streamlit
+langchain
+pymupdf
+pdfplumber
+beautifulsoup4
+requests
+sqlite-utils
+tiktoken

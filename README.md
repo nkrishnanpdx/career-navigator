@@ -8,7 +8,7 @@ Agents
 
 - Job Planner Agent: Plans targeted job search queries.
 
-- Job Search Agent: (Mocked) Retrieves job descriptions based on search queries.
+- Job Search Agent: (Mock up) Retrieves job descriptions based on search queries.
 
 - Application Tailor Agent: Generates tailored resumes and cover letters.
 

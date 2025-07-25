@@ -9,7 +9,7 @@ from tools.pdf_utils import extract_text_from_pdf
 from tools.db import initialize_db, insert_application
 
 st.set_page_config(page_title="Intelligent Career Navigator", layout="centered")
-st.title("🧭 Intelligent Career Navigator")
+st.title("Career Navigator")
 
 initialize_db()
 

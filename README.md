@@ -15,3 +15,17 @@ Agents
 - Email Agent: Sends job applications via email (SendGrid).
 
 - Application Tracker Agent: Logs submissions in a local SQLite database.
+
+
+Please edit agents/email_agent.py
+- add TO_EMAIL and FROM_EMAIL 
+
+Enter the actual api keys in .env
+- You can just export with set in cmd too.
+
+Dont forget to save you resume in /pwd/career-navigator/sample_resume.pdf
+
+
+
+
+

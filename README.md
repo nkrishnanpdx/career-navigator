@@ -1,6 +1,6 @@
 A multi-agent job search and application assistant built using OpenAI's Agent SDK and agentic design principles.
 
-This system automates job searching, resume tailoring, email submissions, and tracking—all powered by collaborating AI agents.
+This system automates job searching, resume tailoring, email submissions, and tracking, all powered by collaborating AI agents.
 
 Agents
 

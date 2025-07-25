@@ -1,17 +1,15 @@
-from agents import Agent, Runner
+# job_search.py
+import asyncio
 
-INSTRUCTIONS = """
-You are a job search assistant. Given a job search query like 'AI Security Engineer in Seattle',
-return the job description and company info as text.
-"""
-
-search_agent = Agent(
-    name="JobSearchAgent",
-    instructions=INSTRUCTIONS,
-    model="gpt-4o-mini"
-)
-
-async def search_job(query: str, reason: str):
-    input_text = f"Search: {query}\nWhy: {reason}"
-    result = await Runner.run(search_agent, input_text)
-    return result.final_output
+async def search_job(query: str, reason: str) -> str:
+    """
+    Mock job search that returns a dummy job description.
+    Replace this with real scraping or API calls later.
+    """
+    await asyncio.sleep(0.5)  # Simulate network delay
+    return f\"\"\"Job Title: {query}
+Company: Acme Corp
+Location: Remote
+Description: We are looking for a talented professional for {query}.
+Requirements: Relevant skills and experience in the field.
+\"\"\"

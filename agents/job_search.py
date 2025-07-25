@@ -18,8 +18,9 @@ search_agent = Agent(
     name="JobSearch",
     instructions=INSTRUCTIONS,
     model="gpt-4o-mini",
-    output_type=JobSearchResults
+
 )
 
 async def search_job(query: str):
     return await Runner.run(search_agent, f"Query: {query}")
+

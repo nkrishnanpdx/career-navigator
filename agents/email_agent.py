@@ -5,7 +5,7 @@ import asyncio
 from concurrent.futures import ThreadPoolExecutor
 import certifi
 
-# Ensure proper SSL cert file location (fix SSL verify issues)
+
 os.environ['SSL_CERT_FILE'] = certifi.where()
 
 executor = ThreadPoolExecutor()
@@ -15,8 +15,8 @@ async def send_application_email(subject: str, html_body: str) -> dict:
     if not sg_api_key:
         return {"status": "fail", "reason": "SENDGRID_API_KEY not set in environment"}
 
-    from_email = Email("FROM_EMAIL")
-    to_email = To("TO_EMAIL")
+    from_email = Email("FROM_EMAIL") # Change this to your email
+    to_email = To("TO_EMAIL") # Change this to the email you want to send the email to
 
     mail = Mail(
         from_email=from_email,
@@ -26,7 +26,7 @@ async def send_application_email(subject: str, html_body: str) -> dict:
     )
 
     sg = sendgrid.SendGridAPIClient(api_key=sg_api_key)
-    # Disable SSL verification for debugging 
+    # Disable SSL verification for debugging, NOT FOR PRODUCTION
     sg.client._session.verify = False
 
     def send_mail_sync():
